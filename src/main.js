@@ -22,17 +22,17 @@ form.addEventListener('submit', async function (e) {
   if (search === '') {
     return;
   }
-
+  page = 1;
   gallery.innerHTML = '';
   loader.style.display = 'block';
-
   try {
     const data = await getSearchImg(search);
     renderImg(data.hits);
+    page += 1;
     if (page > 1) {
       button.style.display = 'block';
     }
-  } catch {
+  } catch (error) {
     console.error(error);
   } finally {
     loader.style.display = 'none';
@@ -99,13 +99,12 @@ function templateImg(images) {
 
 function renderImg(images) {
   if (images.length === 0) {
-    iziToast.error({
+    return iziToast.error({
       title: 'Error',
       message:
         'Sorry, there are no images matching your search query. Please try again.',
       position: 'topCenter',
     });
-    return;
   }
   const markup = templateImg(images);
   gallery.insertAdjacentHTML('beforeend', markup);
@@ -131,9 +130,20 @@ button.addEventListener('click', async () => {
     const data = await getSearchImg(search);
     renderImg(data.hits);
     page += 1;
+    button.style.display = 'block';
+    scroll();
   } catch (error) {
     console.error(error);
   } finally {
-    button.style.display = 'block';
+    // button.style.display = 'block';
   }
 });
+function scroll() {
+  let galleryItem = document
+    .querySelector('.gallery-item')
+    .getBoundingClientRect().height;
+  window.scrollBy({
+    top: galleryItem * 2,
+    behavior: 'smooth',
+  });
+}
