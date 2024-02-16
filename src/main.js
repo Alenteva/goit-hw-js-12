@@ -4,6 +4,12 @@ import iziToast from 'izitoast';
 import 'izitoast/dist/css/iziToast.min.css';
 import axios from 'axios';
 
+const lightbox = new SimpleLightbox('.gallery a', {
+  captionsData: 'alt',
+  captionPosition: 'bottom',
+  captionDelay: 250,
+});
+
 const form = document.querySelector('form');
 const gallery = document.querySelector('.gallery');
 const loader = document.querySelector('.loader');
@@ -25,6 +31,7 @@ form.addEventListener('submit', async function (e) {
   page = 1;
   gallery.innerHTML = '';
   loader.style.display = 'block';
+  button.style.display = 'none';
   try {
     const data = await getSearchImg(search);
     renderImg(data.hits);
@@ -32,6 +39,7 @@ form.addEventListener('submit', async function (e) {
     if (page > 1) {
       button.style.display = 'block';
     }
+    scroll();
   } catch (error) {
     console.error(error);
   } finally {
@@ -108,11 +116,6 @@ function renderImg(images) {
   }
   const markup = templateImg(images);
   gallery.insertAdjacentHTML('beforeend', markup);
-  const lightbox = new SimpleLightbox('.gallery a', {
-    captionsData: 'alt',
-    captionPosition: 'bottom',
-    captionDelay: 250,
-  });
   lightbox.refresh();
 }
 
@@ -131,19 +134,20 @@ button.addEventListener('click', async () => {
     renderImg(data.hits);
     page += 1;
     button.style.display = 'block';
-    scroll();
   } catch (error) {
     console.error(error);
-  } finally {
-    // button.style.display = 'block';
   }
 });
+
 function scroll() {
-  let galleryItem = document
-    .querySelector('.gallery-item')
-    .getBoundingClientRect().height;
-  window.scrollBy({
-    top: galleryItem * 2,
-    behavior: 'smooth',
-  });
+  if (searchParams.page > 1) {
+    const rect = document
+      .querySelector('.gallery-item')
+      .getBoundingClientRect();
+    window.scrollBy({
+      top: rect.height * 2,
+      left: 0,
+      behavior: 'smooth',
+    });
+  }
 }
