@@ -19,7 +19,7 @@ let search;
 
 let page = 1;
 let per_page = 15;
-const totalHits = Math.ceil(500 / per_page);
+let totalPages;
 
 form.addEventListener('submit', async function (e) {
   e.preventDefault();
@@ -31,14 +31,12 @@ form.addEventListener('submit', async function (e) {
   page = 1;
   gallery.innerHTML = '';
   loader.style.display = 'block';
-  button.style.display = 'none';
   try {
     const data = await getSearchImg(search);
     renderImg(data.hits);
+    totalPages = Math.ceil(data.totalHits / per_page);
     page += 1;
-    if (page > 1) {
-      button.style.display = 'block';
-    }
+    loadMoreButtonShow();
     scroll();
   } catch (error) {
     console.error(error);
@@ -64,7 +62,6 @@ async function getSearchImg(search) {
     return response.data;
   } catch (error) {
     console.error(error);
-    throw error;
   } finally {
     loader.style.display = 'none';
   }
@@ -120,7 +117,7 @@ function renderImg(images) {
 }
 
 button.addEventListener('click', async () => {
-  if (page > totalHits) {
+  if (page > totalPages) {
     button.style.display = 'none';
     return iziToast.error({
       position: 'topRight',
@@ -133,14 +130,14 @@ button.addEventListener('click', async () => {
     const data = await getSearchImg(search);
     renderImg(data.hits);
     page += 1;
-    button.style.display = 'block';
+    loadMoreButtonShow();
   } catch (error) {
     console.error(error);
   }
 });
 
 function scroll() {
-  if (searchParams.page > 1) {
+  if (page > 1) {
     const rect = document
       .querySelector('.gallery-item')
       .getBoundingClientRect();
@@ -149,5 +146,12 @@ function scroll() {
       left: 0,
       behavior: 'smooth',
     });
+  }
+}
+function loadMoreButtonShow() {
+  if (page > 1) {
+    button.style.display = 'block';
+  } else {
+    button.style.display = 'none';
   }
 }
