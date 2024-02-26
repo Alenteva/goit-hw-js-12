@@ -1,3 +1,5 @@
+'use strict';
+
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 import iziToast from 'izitoast';
@@ -18,7 +20,7 @@ const button = document.querySelector('.btn');
 let search;
 
 let page = 1;
-let per_page = 15;
+let perPage = 15;
 let totalPages;
 
 form.addEventListener('submit', async function (e) {
@@ -30,18 +32,18 @@ form.addEventListener('submit', async function (e) {
   }
   page = 1;
   gallery.innerHTML = '';
-  loader.style.display = 'block';
+  showLoader();
   try {
     const data = await getSearchImg(search);
     renderImg(data.hits);
-    totalPages = Math.ceil(data.totalHits / per_page);
+    totalPages = Math.ceil(data.totalHits / perPage);
     page += 1;
     loadMoreButtonShow();
     scroll();
   } catch (error) {
     console.error(error);
   } finally {
-    loader.style.display = 'none';
+    hideLoader();
   }
   e.target.reset();
 });
@@ -55,15 +57,19 @@ async function getSearchImg(search) {
       orientation: 'horizontal',
       safesearch: 'true',
       page: `${page}`,
-      per_page: `${per_page}`,
+      per_page: `${perPage}`,
     });
     axios.defaults.baseURL = 'https://pixabay.com';
     const response = await axios.get(`/api/?${searchParams}`);
     return response.data;
   } catch (error) {
-    console.error(error);
+    return iziToast.error({
+      title: 'Error',
+      message: 'Error',
+      position: 'topCenter',
+    });
   } finally {
-    loader.style.display = 'none';
+    hideLoader();
   }
 }
 function templateImg(images) {
@@ -125,14 +131,18 @@ button.addEventListener('click', async () => {
     });
   }
   button.style.display = 'none';
-  loader.style.display = 'block';
+  showLoader();
   try {
     const data = await getSearchImg(search);
     renderImg(data.hits);
     page += 1;
     loadMoreButtonShow();
   } catch (error) {
-    console.error(error);
+    return iziToast.error({
+      title: 'Error',
+      message: 'Error',
+      position: 'topCenter',
+    });
   }
 });
 
@@ -154,4 +164,11 @@ function loadMoreButtonShow() {
   } else {
     button.style.display = 'none';
   }
+}
+function showLoader() {
+  loader.style.display = 'block';
+}
+
+function hideLoader() {
+  loader.style.display = 'none';
 }
